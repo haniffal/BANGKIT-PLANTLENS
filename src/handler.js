@@ -27,29 +27,7 @@ const predictImageWithPython = (imagePath) => {
         });
     });
 };
-/*
-const getSolusiForPenyakit = async (id_penyakit) => {
-    const query = `
-        SELECT id_solusi 
-        FROM solusi 
-        WHERE id_penyakit = ? 
-        LIMIT 1;
-    `;
 
-    try {
-        const [rows] = await connection.promise().query(query, [id_penyakit]);
-        if (rows.length > 0) {
-            return rows[0].id_solusi;
-        } else {
-            throw new Error(`Solusi untuk penyakit dengan ID '${id_penyakit}' tidak ditemukan.`);
-        }
-    } catch (error) {
-        console.error('Error mencari solusi:', error);
-        throw error;
-    }
-};
-
-*/
 
 // Endpoint /predict untuk menerima file gambar
 const uploadImageAndPredictHandler = async (request, h) => {
@@ -180,14 +158,4 @@ const getHistoryHandler = async (request, h) => {
     }
 };
 
-
-
-
 module.exports = { getHistoryHandler, uploadImageAndPredictHandler  };
-
-
-
-
-
-
-
