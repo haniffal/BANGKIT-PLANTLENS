@@ -43,6 +43,12 @@ const uploadImageAndPredictHandler = async (request, h) => {
     // Menyimpan file sementara di server
     const fileName = file.hapi.filename;
     const uploadPath = path.join(__dirname, 'uploads', fileName);
+    
+    // Cek apakah folder 'uploads' sudah ada, jika belum buat foldernya
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true }); // Membuat folder jika belum ada
+    }
     const fileStream = fs.createWriteStream(uploadPath);
 
     await new Promise((resolve, reject) => {
