@@ -30,12 +30,12 @@ pip3 --version
 Jika perintah ini menghasilkan versi dari Python dan pip, itu berarti mereka sudah terinstal dengan benar.
 
 ### 4. Membuat Virtual Environment
+Membuat virtual environment jika anda bermasalah pada saat Instal Dependensi Python pada step 7
 
 Buat virtual environment untuk proyek ini dengan menjalankan perintah berikut:
 ```bash
 python3 -m venv venv
 ```
-gunakan Virtual Environment jika gagal saat Instal Dependensi Python (saran)
 
 ### 5. Aktifkan Virtual Environment
 
@@ -80,8 +80,8 @@ deactivate
 
 
 # API Documentation
-Endpoint: `http://localhost:<PORT>`
-Tools : Postman
+#### Endpoint: `http://localhost:<PORT>`
+#### Tools : Postman
 
 
 ## **Show History**
@@ -106,7 +106,7 @@ Endpoint ini digunakan untuk mendapatkan data riwayat prediksi yang pernah dilak
 	  "id_history": "Z02MDteWmQGTkZ51Cfr17",
 	  "nama_tanaman": "Tomato",
 	  "nama_penyakit": "Spider_mites Two-spotted_spider_mite",
-	  "desc_solusi": "Semprotkan fungisida berbahan aktif mankozeb atau sulfur secara rutin".
+	  "desc_solusi": "Semprotkan fungisida berbahan aktif mankozeb atau sulfur secara rutin",
 	  "image": "https://storage.googleapis.com/history/1733664283684-image(208).JPG",
 	  "tgl_history": "2024-12-07T17:00:00.000Z"
 }
@@ -147,7 +147,7 @@ Content-Type: multipart/form-data
   "data": {
     "nama_tanaman": "Apple",     
     "nama_penyakit": "Black_rot",    
-    "penanganan": "Gunakan fungisida berbahan aktif kaptan atau chlorothalonil secara teratur, bersihkan kebun, dan pangkas bagian tanaman yang sakit".       
+    "penanganan": "Gunakan fungisida berbahan aktif kaptan atau chlorothalonil secara teratur, bersihkan kebun, dan pangkas bagian tanaman yang sakit",       
     "image_url": "https://storage.googleapis.com/history/1733665089415-image.JPG"     
   }
 }
