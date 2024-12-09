@@ -77,8 +77,10 @@ const uploadImageAndPredictHandler = async (request, h) => {
         if (solusiResult.length === 0) throw new Error(`Solusi untuk penyakit "${nama_penyakit}" tidak ditemukan.`);
         const desc_solusi = solusiResult[0].desc_solusi;
 
-
-        //const id_solusi = await getSolusiForPenyakit(id_penyakit);
+        const getIdSolusiQuery = 'SELECT id_solusi FROM solusi WHERE id_penyakit = ?';
+        const [idsolusiResult] = await connection.promise().query(getIdSolusiQuery, [id_penyakit]);
+        if (idsolusiResult.length === 0) throw new Error(`Solusi untuk penyakit "${nama_penyakit}" tidak ditemukan.`);
+        const id_solusi = idsolusiResult[0].id_solusi;
 
         // Simpan data ke tabel history
         const historyId = nanoid();
@@ -87,7 +89,7 @@ const uploadImageAndPredictHandler = async (request, h) => {
         INSERT INTO history (id_history, tgl_history, id_tanaman, id_penyakit, id_solusi, image)
         VALUES (?, ?, ?, ?, ?, ?)
         `;
-        await connection.promise().query(insertQuery, [historyId, tgl_history, id_tanaman, id_penyakit, solusiResult[0].id_solusi, publicUrl]);
+        await connection.promise().query(insertQuery, [historyId, tgl_history, id_tanaman, id_penyakit, id_solusi, publicUrl]);
 
 
         // Hapus file setelah digunakan
