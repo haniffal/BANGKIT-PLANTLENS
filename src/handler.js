@@ -1,6 +1,5 @@
 const { nanoid } = require('nanoid');
 const connection  = require('./db');
-const moment = require('moment-timezone');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
@@ -16,9 +15,9 @@ const predictImageWithPython = (imagePath) => {
             
             // Membersihkan output dari karakter escape yang tidak diinginkan
             const cleanedOutput = stdout
-                .replace(/\x1b\[[0-9;]*m/g, '') // Menghapus escape sequences ANSI
-                .replace(/\b/g, '')             // Menghapus backspaces (\b)
-                .trim();                        // Menghapus spasi di awal dan akhir
+                .replace(/\x1b\[[0-9;]*m/g, '') 
+                .replace(/\b/g, '')             
+                .trim();                        
 
             // Hanya mengambil nama kelas yang diprediksi
             const prediction = cleanedOutput.split('\n').pop().trim();
@@ -94,7 +93,7 @@ const uploadImageAndPredictHandler = async (request, h) => {
         // Simpan data ke tabel history
         const historyId = nanoid();
 
-        const tgl_history = moment().tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'); 
+        const tgl_history = new Date().toISOString().slice(0, 19).replace('T', ' ');
         const insertQuery = `
         INSERT INTO history (id_history, tgl_history, id_tanaman, id_penyakit, id_solusi, image)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -150,28 +149,30 @@ const getHistoryHandler = async (request, h) => {
         solusi s ON h.id_solusi = s.id_solusi  
     ORDER BY 
         h.tgl_history DESC;
-`;
+    `;
 
     try {
         const [rows] = await connection.promise().query(query);
+
+        // Format tgl_history ke format WIB
         const formattedRows = rows.map(row => ({
             ...row,
-            tgl_history: moment(row.tgl_history).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+            tgl_history: new Date(row.tgl_history).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' }),
         }));
 
         return h.response({
             status: 'success',
             data: formattedRows,
         }).code(200);
-        } catch (error) {
-            console.error(error);
-            return h.response({
-                status: 'fail',
-                message: 'Gagal mengambil data history.',
+    } catch (error) {
+        console.error(error);
+        return h.response({
+            status: 'fail',
+            message: 'Gagal mengambil data history.',
         }).code(500);
     }
-
 };
+
 
 
 module.exports = { getHistoryHandler, uploadImageAndPredictHandler  };
