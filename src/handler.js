@@ -93,7 +93,7 @@ const uploadImageAndPredictHandler = async (request, h) => {
         // Simpan data ke tabel history
         const historyId = nanoid();
 
-        const tgl_history = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const tgl_history = new Date().toISOString().split('T')[0];
         const insertQuery = `
         INSERT INTO history (id_history, tgl_history, id_tanaman, id_penyakit, id_solusi, image)
         VALUES (?, ?, ?, ?, ?, ?)
@@ -153,16 +153,16 @@ const getHistoryHandler = async (request, h) => {
 
     try {
         const [rows] = await connection.promise().query(query);
+        console.log(rows); // Debugging data query
 
-        // Format tgl_history ke format WIB
-        const formattedRows = rows.map(row => ({
-            ...row,
-            tgl_history: new Date(row.tgl_history).toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta' }),
-        }));
+        rows.forEach(row => {
+            const date = new Date(row.tgl_history);
+            row.tgl_history = date.toLocaleDateString('id-ID'); 
+        });
 
         return h.response({
             status: 'success',
-            data: formattedRows,
+            data: rows, // Data dari tabel history dengan nama tanaman dan penyakit
         }).code(200);
     } catch (error) {
         console.error(error);
