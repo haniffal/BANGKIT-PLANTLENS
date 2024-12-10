@@ -1,3 +1,5 @@
+/*
+
 'use strict'
 const {Storage} = require("@google-cloud/storage")
 const fs = require('fs')
@@ -30,7 +32,7 @@ const uploadImageHandler = async (filePath, fileName) => {
         // Baca file dari disk dan unggah ke Google Cloud Storage
         const stream = fileUpload.createWriteStream({
             metadata: {
-                contentType: 'image/jpeg', // Anda bisa menggunakan MIME type file asli
+                contentType: 'image/jpeg', 
             },
         });
 
@@ -49,36 +51,61 @@ const uploadImageHandler = async (filePath, fileName) => {
     }
 };
 
-/*
-const uploadImageHandler = async (file) => {
-    if (!file) {
-        throw new Error('Gagal mengunggah gambar. Mohon lampirkan file gambar.');
+
+module.exports = { uploadImageHandler };
+
+*/
+
+'use strict'
+const { Storage } = require('@google-cloud/storage');
+const fs = require('fs');
+const path = require('path');
+
+const pathKey = path.resolve('./serviceaccountkey.json');
+const gcs = new Storage({
+    projectId: 'bangkit-plantlens',
+    keyFilename: pathKey
+});
+
+const bucketName = 'history-image';
+const bucket = gcs.bucket(bucketName);
+
+function getPublicUrl(filename) {
+    return `https://storage.googleapis.com/${bucketName}/${filename}`;
+}
+
+const uploadImageHandler = async (filePath, fileName) => {
+    if (!fs.existsSync(filePath)) {
+        throw new Error('Gagal mengunggah gambar. File tidak ditemukan.');
     }
 
-    // Cek ekstensi file
-    if (!file.hapi.filename.match(/\.(jpg|jpeg|png)$/i)) {
-        throw new Error('Gagal mengunggah gambar. File harus berupa gambar dengan ekstensi jpg, jpeg, png.');
+    // Ekstensi file yang diizinkan
+    const allowedExtensions = ['jpeg', 'jpg', 'png'];
+    const fileExtension = path.extname(fileName).toLowerCase().slice(1); 
+
+    if (!allowedExtensions.includes(fileExtension)) {
+        throw new Error('Format file tidak didukung. Hanya mendukung JPEG, JPG, dan PNG.');
     }
 
-    const gcsname = `${Date.now()}-${file.hapi.filename}`;
+    const gcsname = `${Date.now()}-${fileName}`;
     const fileUpload = bucket.file(gcsname);
 
     try {
-        // Upload file ke Google Cloud Storage
+        // Buat stream untuk mengunggah file ke GCS
         const stream = fileUpload.createWriteStream({
             metadata: {
-                contentType: file.hapi.headers['content-type'],
+                contentType: `image/${fileExtension}`, // Menggunakan ekstensi sebagai content type
             },
         });
 
-        // Tunggu sampai upload selesai
         await new Promise((resolve, reject) => {
-            file.pipe(stream)
+            fs.createReadStream(filePath)
+                .pipe(stream)
                 .on('finish', resolve)
                 .on('error', reject);
         });
 
-        // Mengembalikan URL publik dari file yang diupload
+        // Mengembalikan URL publik dari file yang diunggah
         return getPublicUrl(gcsname);
     } catch (error) {
         console.error(error);
@@ -86,6 +113,4 @@ const uploadImageHandler = async (file) => {
     }
 };
 
-
-*/
 module.exports = { uploadImageHandler };

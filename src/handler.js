@@ -1,10 +1,10 @@
 const { nanoid } = require('nanoid');
 const connection  = require('./db');
+const moment = require('moment-timezone');
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const { uploadImageHandler } = require('./ImageUpload');  // Import the image upload handler
-
+const { uploadImageHandler } = require('./ImageUpload');  
 
 const predictImageWithPython = (imagePath) => {
     return new Promise((resolve, reject) => {
@@ -27,29 +27,7 @@ const predictImageWithPython = (imagePath) => {
         });
     });
 };
-/*
-const getSolusiForPenyakit = async (id_penyakit) => {
-    const query = `
-        SELECT id_solusi 
-        FROM solusi 
-        WHERE id_penyakit = ? 
-        LIMIT 1;
-    `;
 
-    try {
-        const [rows] = await connection.promise().query(query, [id_penyakit]);
-        if (rows.length > 0) {
-            return rows[0].id_solusi;
-        } else {
-            throw new Error(`Solusi untuk penyakit dengan ID '${id_penyakit}' tidak ditemukan.`);
-        }
-    } catch (error) {
-        console.error('Error mencari solusi:', error);
-        throw error;
-    }
-};
-
-*/
 
 // Endpoint /predict untuk menerima file gambar
 const uploadImageAndPredictHandler = async (request, h) => {
@@ -65,6 +43,13 @@ const uploadImageAndPredictHandler = async (request, h) => {
     // Menyimpan file sementara di server
     const fileName = file.hapi.filename;
     const uploadPath = path.join(__dirname, 'uploads', fileName);
+
+    // Cek apakah folder 'uploads' sudah ada, jika belum buat foldernya
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true }); // Membuat folder jika belum ada
+    }
+
     const fileStream = fs.createWriteStream(uploadPath);
 
     await new Promise((resolve, reject) => {
@@ -99,17 +84,22 @@ const uploadImageAndPredictHandler = async (request, h) => {
         if (solusiResult.length === 0) throw new Error(`Solusi untuk penyakit "${nama_penyakit}" tidak ditemukan.`);
         const desc_solusi = solusiResult[0].desc_solusi;
 
+        const getIdSolusiQuery = 'SELECT id_solusi FROM solusi WHERE id_penyakit = ?';
+        const [idsolusiResult] = await connection.promise().query(getIdSolusiQuery, [id_penyakit]);
+        if (idsolusiResult.length === 0) throw new Error(`Solusi untuk penyakit "${nama_penyakit}" tidak ditemukan.`);
+        const id_solusi = idsolusiResult[0].id_solusi;
 
-        //const id_solusi = await getSolusiForPenyakit(id_penyakit);
+
 
         // Simpan data ke tabel history
         const historyId = nanoid();
-        const tgl_history = new Date().toISOString().split('T')[0];
+
+        const tgl_history = moment().tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'); 
         const insertQuery = `
         INSERT INTO history (id_history, tgl_history, id_tanaman, id_penyakit, id_solusi, image)
         VALUES (?, ?, ?, ?, ?, ?)
         `;
-        await connection.promise().query(insertQuery, [historyId, tgl_history, id_tanaman, id_penyakit, solusiResult[0].id_solusi, publicUrl]);
+        await connection.promise().query(insertQuery, [historyId, tgl_history, id_tanaman, id_penyakit, id_solusi, publicUrl]);
 
 
         // Hapus file setelah digunakan
@@ -122,7 +112,6 @@ const uploadImageAndPredictHandler = async (request, h) => {
                 nama_tanaman,
                 nama_penyakit,
                 penanganan: desc_solusi,
-                image_url: publicUrl,
             },
         }).code(200);
         
@@ -148,7 +137,7 @@ const getHistoryHandler = async (request, h) => {
         h.id_history,
         t.nama_tanaman, 
         p.nama_penyakit, 
-        s.desc_solusi,   -- Menambahkan join dengan tabel solusi untuk mendapatkan desc_solusi
+        s.desc_solusi,  
         h.image,
         h.tgl_history
     FROM 
@@ -158,36 +147,32 @@ const getHistoryHandler = async (request, h) => {
     JOIN 
         penyakit p ON h.id_penyakit = p.id_penyakit
     JOIN 
-        solusi s ON h.id_solusi = s.id_solusi   -- Join dengan tabel solusi
+        solusi s ON h.id_solusi = s.id_solusi  
     ORDER BY 
         h.tgl_history DESC;
 `;
 
     try {
         const [rows] = await connection.promise().query(query);
-        console.log(rows); // Debugging data query
+        const formattedRows = rows.map(row => ({
+            ...row,
+            tgl_history: moment(row.tgl_history).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss'),
+        }));
 
         return h.response({
             status: 'success',
-            data: rows, // Data dari tabel history dengan nama tanaman dan penyakit
+            data: formattedRows,
         }).code(200);
-    } catch (error) {
-        console.error(error);
-        return h.response({
-            status: 'fail',
-            message: 'Gagal mengambil data history.',
+        } catch (error) {
+            console.error(error);
+            return h.response({
+                status: 'fail',
+                message: 'Gagal mengambil data history.',
         }).code(500);
     }
+
 };
 
 
-
-
 module.exports = { getHistoryHandler, uploadImageAndPredictHandler  };
-
-
-
-
-
-
 

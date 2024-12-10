@@ -2,4 +2,3 @@ serviceaccountkey.json
 node_modules/
 /src/db.js
 venv/
-pacage-lock.json
