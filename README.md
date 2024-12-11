@@ -147,8 +147,7 @@ Content-Type: multipart/form-data
   "data": {
     "nama_tanaman": "Apple",     
     "nama_penyakit": "Black_rot",    
-    "penanganan": "Gunakan fungisida berbahan aktif kaptan atau chlorothalonil secara teratur, bersihkan kebun, dan pangkas bagian tanaman yang sakit",       
-    "image_url": "https://storage.googleapis.com/history/1733665089415-image.JPG"     
+    "penanganan": "Gunakan fungisida berbahan aktif kaptan atau chlorothalonil secara teratur, bersihkan kebun, dan pangkas bagian tanaman yang sakit"  
   }
 }
 ```
