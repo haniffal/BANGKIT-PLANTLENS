@@ -5,10 +5,10 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 import os
 
-# Ambil path file gambar dari argumen
+
 image_input = sys.argv[1]
 
-# Fungsi untuk memuat gambar dari path lokal
+
 def load_image(input_path):
     if os.path.exists(input_path):
         img = Image.open(input_path)
@@ -16,22 +16,21 @@ def load_image(input_path):
         raise ValueError("Input harus berupa path lokal yang valid.")
     return img
 
-# Memuat gambar
+
 img = load_image(image_input)
 
-# Preprocessing gambar
+
 img = img.resize((224, 224))
 img_array = np.array(img)
 img_array = np.expand_dims(img_array, axis=0)
 img_array = img_array / 255.0
 
-# Memuat model .h5
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(current_dir, 'models', 'plant_disease_model.h5')
 model = load_model(model_path)
 
-# Daftar kelas untuk prediksi
-# Daftar kelas untuk prediksi
+
 class_names = [
     'Apple___Apple_scab', 'Apple___Black_rot', 'Apple___Cedar_apple_rust', 'Apple___healthy',
     'Background_without_leaves', 'Blueberry___healthy', 'Cherry___healthy', 'Cherry___Powdery_mildew',
@@ -46,14 +45,14 @@ class_names = [
     'Tomato___Tomato_mosaic_virus', 'Tomato___Tomato_Yellow_Leaf_Curl_Virus'
 ]
 
-# Prediksi
+
 predictions = model.predict(img_array)
 
-# Debugging: Print predictions shape and values
+
 print(f"Predictions: {predictions}")
 print(f"Prediction shape: {predictions.shape}")
 
-# Check the predictions format and handle accordingly
+
 if predictions.ndim == 2:
     predicted_class = np.argmax(predictions, axis=-1)
 elif predictions.ndim == 1:
@@ -61,8 +60,8 @@ elif predictions.ndim == 1:
 else:
     raise ValueError("Unexpected prediction format")
 
-# Get the predicted class name
+
 predicted_class_name = class_names[predicted_class[0]]
 
-# Output prediksi
+
 print(predicted_class_name)
