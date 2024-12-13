@@ -21,7 +21,7 @@ const uploadImageHandler = async (filePath, fileName) => {
         throw new Error('Gagal mengunggah gambar. File tidak ditemukan.');
     }
 
-    // Ekstensi file yang diizinkan
+   
     const allowedExtensions = ['jpeg', 'jpg', 'png'];
     const fileExtension = path.extname(fileName).toLowerCase().slice(1); 
 
@@ -33,10 +33,10 @@ const uploadImageHandler = async (filePath, fileName) => {
     const fileUpload = bucket.file(gcsname);
 
     try {
-        // Buat stream untuk mengunggah file ke GCS
+       
         const stream = fileUpload.createWriteStream({
             metadata: {
-                contentType: `image/${fileExtension}`, // Menggunakan ekstensi sebagai content type
+                contentType: `image/${fileExtension}`, 
             },
         });
 
@@ -47,7 +47,7 @@ const uploadImageHandler = async (filePath, fileName) => {
                 .on('error', reject);
         });
 
-        // Mengembalikan URL publik dari file yang diunggah
+       
         return getPublicUrl(gcsname);
     } catch (error) {
         console.error(error);
