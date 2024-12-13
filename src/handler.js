@@ -11,15 +11,11 @@ const predictImageWithPython = (imagePath) => {
         exec(command, (err, stdout, stderr) => {
             if (err) {
                 return reject(stderr);
-            }
-            
-            // Membersihkan output dari karakter escape yang tidak diinginkan
+            }       
             const cleanedOutput = stdout
                 .replace(/\x1b\[[0-9;]*m/g, '') 
                 .replace(/\b/g, '')             
                 .trim();                        
-
-            // Hanya mengambil nama kelas yang diprediksi
             const prediction = cleanedOutput.split('\n').pop().trim();
 
             resolve(prediction);
@@ -28,7 +24,7 @@ const predictImageWithPython = (imagePath) => {
 };
 
 
-// Endpoint /predict untuk menerima file gambar
+
 const uploadImageAndPredictHandler = async (request, h) => {
     const { file } = request.payload;
 
@@ -39,14 +35,14 @@ const uploadImageAndPredictHandler = async (request, h) => {
         }).code(400);
     }
 
-    // Menyimpan file sementara di server
+
     const fileName = file.hapi.filename;
     const uploadPath = path.join(__dirname, 'uploads', fileName);
 
-    // Cek apakah folder 'uploads' sudah ada, jika belum buat foldernya
+ 
     const uploadDir = path.join(__dirname, 'uploads');
     if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true }); // Membuat folder jika belum ada
+        fs.mkdirSync(uploadDir, { recursive: true }); 
     }
 
     const fileStream = fs.createWriteStream(uploadPath);
@@ -59,22 +55,19 @@ const uploadImageAndPredictHandler = async (request, h) => {
 
     try {
 
-        // Jalankan prediksi menggunakan model Python
+        
         const prediction = await predictImageWithPython(uploadPath);
-
-        // Periksa apakah prediksi adalah "Background_without_leaves"
+        
         if (prediction === 'Background_without_leaves') {
-            fs.unlinkSync(uploadPath); // Hapus file setelah diproses
+            fs.unlinkSync(uploadPath); 
             return h.response({
                 status: 'fail',
                 message: 'Tidak menemukan daun untuk di-scan.',
         }).code(400);
         }
 
-        // Upload gambar ke Google Cloud Storage menggunakan path lokal
         const publicUrl = await uploadImageHandler(uploadPath, fileName);
 
-        // Ambil id_tanaman, id_penyakit, dan id_solusi berdasarkan prediction
         const [nama_tanaman, nama_penyakit] = prediction.split('___');
 
         const getIdTanamanQuery = 'SELECT id_tanaman FROM tanaman WHERE nama_tanaman = ?';
@@ -97,9 +90,7 @@ const uploadImageAndPredictHandler = async (request, h) => {
         if (idsolusiResult.length === 0) throw new Error(`Solusi untuk penyakit "${nama_penyakit}" tidak ditemukan.`);
         const id_solusi = idsolusiResult[0].id_solusi;
 
-
-
-        // Simpan data ke tabel history
+        
         const historyId = nanoid();
 
         const tgl_history = new Date().toISOString().split('T')[0];
@@ -110,7 +101,7 @@ const uploadImageAndPredictHandler = async (request, h) => {
         await connection.promise().query(insertQuery, [historyId, tgl_history, id_tanaman, id_penyakit, id_solusi, publicUrl]);
 
 
-        // Hapus file setelah digunakan
+        
         fs.unlinkSync(uploadPath);
 
         return h.response({
@@ -125,8 +116,6 @@ const uploadImageAndPredictHandler = async (request, h) => {
         
     } catch (error) {
         console.error(error);
-
-        // Hapus file jika ada error
         if (fs.existsSync(uploadPath)) {
             fs.unlinkSync(uploadPath);
         }
@@ -162,7 +151,7 @@ const getHistoryHandler = async (request, h) => {
 
     try {
         const [rows] = await connection.promise().query(query);
-        console.log(rows); // Debugging data query
+        console.log(rows);
 
         rows.forEach(row => {
             const date = new Date(row.tgl_history);
@@ -171,7 +160,7 @@ const getHistoryHandler = async (request, h) => {
 
         return h.response({
             status: 'success',
-            data: rows, // Data dari tabel history dengan nama tanaman dan penyakit
+            data: rows, 
         }).code(200);
     } catch (error) {
         console.error(error);
