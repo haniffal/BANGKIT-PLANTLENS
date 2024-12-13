@@ -1,7 +1,13 @@
 const { getHistoryHandler, uploadImageAndPredictHandler } = require('./handler');
 
 const routes = [
-
+{
+    method: 'GET',
+    path: '/',
+    handler: () => {
+        return { status: 'success', message: 'Welcome to the API' };
+    },
+},
 {
     method: 'GET',
     path: '/history',
