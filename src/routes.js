@@ -22,9 +22,9 @@ const routes = [
         payload: {
             allow: 'multipart/form-data',
             multipart: true,
-            output: 'stream', // Output sebagai stream untuk file upload
+            output: 'stream',
             parse: true,
-            maxBytes: 5 * 1024 * 1024, // Batas ukuran file (5 MB)
+            maxBytes: 5 * 1024 * 1024,
         },
     },
 },
