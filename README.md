@@ -168,6 +168,8 @@ Content-Type: multipart/form-data
 ```
 
 
-# Penting
+# Cloud Computing  Architecture
+![User](https://github.com/user-attachments/assets/e6c260c5-c3ac-45f0-85fd-ce2d0b2675a0)
 
-jangan lupa untuk mengkonfigurasi database di db.js dan  serviceaccountkey.json 
+
+
