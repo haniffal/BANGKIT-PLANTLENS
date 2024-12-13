@@ -62,6 +62,15 @@ const uploadImageAndPredictHandler = async (request, h) => {
         // Jalankan prediksi menggunakan model Python
         const prediction = await predictImageWithPython(uploadPath);
 
+        // Periksa apakah prediksi adalah "Background_without_leaves"
+        if (prediction === 'Background_without_leaves') {
+            fs.unlinkSync(uploadPath); // Hapus file setelah diproses
+            return h.response({
+                status: 'fail',
+                message: 'Tidak menemukan daun untuk di-scan.',
+        }).code(400);
+        }
+
         // Upload gambar ke Google Cloud Storage menggunakan path lokal
         const publicUrl = await uploadImageHandler(uploadPath, fileName);
 
